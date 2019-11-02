@@ -8,10 +8,20 @@ import glob
 import json
 from datetime import datetime
 
+import serve
+
 import urllib
 
-HOSTS_FOLDER="test_hosts"
-DATA_FOLDER="test_data"
+HOSTS_FOLDER="tests/test_hosts"
+DATA_FOLDER="tests/test_data"
+AUTH = ""
+
+serve.DATA_FOLDER = DATA_FOLDER
+serve.HOSTS_FOLDER = HOSTS_FOLDER
+
+with open("AUTH") as f:
+    AUTH = f.read()
+
 
 @pytest.fixture
 def setup():
@@ -49,11 +59,18 @@ def setup():
     return "Finished clean"
 
 
-def test_client_startup(setup):
+def test_client_exists(setup):
     """Tests the first time a client connects succesfully"""
-    pass
+    a = serve.exists(AUTH,"192.168.10.100")
+    assert a != (401, "Unauthorized")
+    assert a == (200, "Client exists")
 
-def test_client_next_bite(setup):
+
+    a = serve.exists(AUTH,"192.168.1.100")
+    assert a != (401, "Unauthorized")
+    assert a == (404, "Client not found")
+
+def test_client_register(setup):
     """
     Tests when the client requests the next bite
         - Time elapsed since the previous check (rate limit)

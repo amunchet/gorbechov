@@ -1,0 +1,6 @@
+.cache/**
+bin/**
+lib/**
+local/**
+share/**
+include/**
