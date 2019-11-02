@@ -4,6 +4,7 @@ Testing for the fetch
 """
 from phase_one import gorbfetch
 
+
 def test_url_fix():
     """
     Fixes the URL encoding
