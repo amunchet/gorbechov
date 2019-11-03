@@ -185,9 +185,19 @@ def dashboard():
     Displays dashboard with all hosts and their statuses
         - Will also want to show where we are in the file overall
     """
-    retval = "<html><head></head><body>"
-    retval += "<h1>Dashboard</h1>"
-    retval += "<table>"
+    retval = "<html><head>"
+    retval += """<!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>"""
+
+    retval += "</head><body class='container'>"
+    retval += "<h2 style='text-align:right;'>Dashboard</h2>"
+    retval += "<table class='table'>"
     retval += "<tr><th>IP</th><th>Run Count</th><th>Last Run</th><th>Status</th></tr>"
     for host in os.listdir(HOSTS_FOLDER):
         with open(os.path.join(HOSTS_FOLDER, host)) as f:
@@ -197,7 +207,21 @@ def dashboard():
             retval += "<td>" + str(found_json["run_count"]) + "</td>"
             retval += "<td>" + str(found_json["last_run"]) + "</td>"
             retval += "<td>" + str(found_json["status"]) + "</td>"
-    retval += "</table></body></html>"
+    retval += "</table><br /><h3>Data collected summary</h3>"
+    retval += "<table class='table'>"
+    retval += "<tr><th>Filename</th><th>Head of file</th></tr>"
+    for item in os.listdir(DATA_FOLDER):
+        with open(os.path.join(DATA_FOLDER, item)) as f:
+            try:
+                temp_head =  [next(f) for x in range(3)]
+            except:
+                temp_head = ["Empty file or error"]
+        retval += "<tr><td>" + item + "</td><td>"
+        retval += ''.join(temp_head)
+        retval += "</td></tr>"
+
+    retval += "</table>"
+    retval += "</body></html>"
     return retval, 200
 
 if __name__ == "__main__":
