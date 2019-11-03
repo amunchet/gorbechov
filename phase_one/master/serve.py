@@ -8,6 +8,7 @@ import json
 import urllib
 import pathlib
 import datetime
+import functools
 
 HOSTS_FOLDER="hosts"
 DATA_FOLDER="data"
@@ -27,29 +28,33 @@ def path_safe(name):
 # Auth function
 def auth(func):
     """Authentication wrapper"""
+    @functools.wraps(func)
     def decorator(*args, **kwargs):
         AUTH = "NOTPOSSIBLEAUTHKEY"
         with open("AUTH") as f:
             AUTH=f.read()
 
         if args[0] != AUTH:
-            return 401, "Unauthorized"
+            return "Unauthorized", 401
         else:
             return func(*args, **kwargs)
     return decorator
 
+@app.route("/exists/<auth>/<ip>/")
 @auth
 def exists(auth, ip):
     """Checks if the IP is already registered"""
     if os.path.exists(os.path.join(HOSTS_FOLDER, ip)):
-        return 200, "Client exists"
+        return "Client exists", 200
     else:
-        return 404, "Client not found"
+        return "Client not found", 404
+
+@app.route("/register/<auth>/<ip>/")
 @auth
 def register(auth, ip):
     """Registers the IP"""
-    if exists(auth, ip)[0] == 200:
-        return 202, "Client already registered"
+    if exists(auth, ip)[1] == 200:
+        return "Client already registered", 202
     else:
         with open(os.path.join(HOSTS_FOLDER, ip), "w") as f:
             json.dump({
@@ -58,7 +63,9 @@ def register(auth, ip):
                     "last_run" : "",
                     "status" : "new"
                 }, f)
-            return 200, "Client created"
+            return "Client created", 200
+
+@app.route("/receive/<auth>/<ip>/")
 @auth
 def receive(auth, ip):
     """
@@ -67,17 +74,17 @@ def receive(auth, ip):
     """
     # Check to make sure that ip exists and isn't over any of the limits
     if not os.path.exists(os.path.join(HOSTS_FOLDER, ip)):
-        return 404, "IP not found"
+        return  "IP not found", 404
     
     host_json = ""
     with open(os.path.join(HOSTS_FOLDER, ip)) as f:
         host_json = json.load(f)
 
     if "run_count" not in host_json:
-        return 405, "Host incorrectly configured"
+        return "Host incorrectly configured", 405
 
     if int(host_json["run_count"]) + 1 > MAX:
-        return 429, "Max limit exceeded"
+        return  "Max limit exceeded", 429
 
     with open(URLS_LIST) as f:
         for line in f.readlines():
@@ -87,17 +94,17 @@ def receive(auth, ip):
                 fixed_line = line
             if not os.path.exists(os.path.join(DATA_FOLDER, path_safe(fixed_line.strip()))):
                 pathlib.Path(os.path.join(DATA_FOLDER, path_safe(fixed_line.strip()))).touch()
-                return 200, fixed_line.strip()
+                return  fixed_line.strip(),200
     
-    return 204, "All URLs finished"
+    return "All URLs finished", 204
 
-
+@app.route("/status/<auth>/<ip>/")
 @auth
 def status(auth, ip):
     """Callback from the client to let server know we've started our request"""
 
     if not os.path.exists(os.path.join(HOSTS_FOLDER, ip)):
-        return 404, "IP not found"
+        return  "IP not found", 404
 
     host_json = ""
     with open(os.path.join(HOSTS_FOLDER, ip)) as f:
@@ -110,7 +117,7 @@ def status(auth, ip):
         f.seek(0)
         json.dump(host_json, f)
         f.truncate()
-
+@app.route("/post/<auth>/", methods=["POST"])
 @auth
 def post(auth, data="", url=""):
     """
@@ -124,23 +131,23 @@ def post(auth, data="", url=""):
         data_data = request.form["data"]
         data_url = request.form["url"]
     else:
-        return 404, "Invalid arguments"
+        return  "Invalid arguments", 404
 
     if not os.path.exists(os.path.join(DATA_FOLDER, path_safe(data_url))):
-        return 405, "No valid data file found"
+        return "No valid data file found", 405
 
     with open(os.path.join(DATA_FOLDER, path_safe(data_url)), "r+") as f:
         f.seek(0)
         f.write(data)
         f.truncate()
     
-    return 200, "Success"
-
+    return "Success", 200
+@app.route("/end/<auth>/<ip>/")
 @auth
 def end(auth, ip):
     """Sends to the server letting us know this host is finished"""
     if not os.path.exists(os.path.join(HOSTS_FOLDER, ip)):
-        return 404, "IP not found"
+        return "IP not found", 404
 
     host_json = ""
     with open(os.path.join(HOSTS_FOLDER, ip)) as f:
@@ -154,6 +161,8 @@ def end(auth, ip):
         f.truncate()
 
 # Server only functions
+@app.route("/")
+@app.route("/dashboard")
 def dashboard():
     """
     Displays dashboard with all hosts and their statuses
@@ -172,7 +181,7 @@ def dashboard():
             retval += "<td>" + str(found_json["last_run"]) + "</td>"
             retval += "<td>" + str(found_json["status"]) + "</td>"
     retval += "</table></body></html>"
-    return 200, retval
+    return retval, 200
 
 if __name__ == "__main__":
     app.run(debug=True)

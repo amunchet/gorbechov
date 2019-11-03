@@ -68,13 +68,13 @@ def setup():
 def test_client_exists(setup):
     """Tests the first time a client connects succesfully"""
     a = serve.exists(AUTH,"192.168.10.100")
-    assert a != (401, "Unauthorized")
-    assert a == (200, "Client exists")
+    assert a != ("Unauthorized", 401)
+    assert a == ("Client exists", 200)
 
 
     a = serve.exists(AUTH,"192.168.1.100")
-    assert a != (401, "Unauthorized")
-    assert a == (404, "Client not found")
+    assert a != ("Unauthorized", 401)
+    assert a == ("Client not found", 404)
 
 def test_client_register(setup):
     """
@@ -82,12 +82,12 @@ def test_client_register(setup):
         - Will return already registered if alredy exists
     """
     a = serve.register(AUTH, "19.168.1.100")
-    assert a != (401, "Unauthorized")
-    assert a == (200, "Client created")
-
+    assert a != ("Unauthorized", 401)
+    assert a == ("Client created", 200)
     a = serve.register(AUTH,"192.168.10.100")
-    assert a != (401, "Unauthorized")
-    assert a == (202, "Client already registered")
+    assert a != ("Unauthorized", 401)
+    assert a == ("Client already registered", 202)
+
 
 def test_client_receive(setup):
     """
@@ -103,8 +103,8 @@ def test_client_receive(setup):
     assert os.path.exists(os.path.join(DATA_FOLDER, serve.path_safe("https://seekingalpha.com"))) == False
 
     a = serve.receive(AUTH, "192.168.10.100")
-    assert a[0] != 401
-    assert a[1] == "https://seekingalpha.com"
+    assert a[1] != 401
+    assert a[0] == "https://seekingalpha.com"
 
     # Make sure we touch the file in data but have no data in it
 
@@ -114,17 +114,17 @@ def test_client_receive(setup):
     serve.MAX = 1
 
     a = serve.receive(AUTH, "192.168.10.100")
-    assert a[0] != 401
-    assert a[0] == 429
+    assert a[1] != 401
+    assert a[1] == 429
     
     serve.MAX = old_max
 
     a = serve.receive(AUTH, "192.168.10.100")
-    assert a[0] != 401
-    assert "seekingalpha" not in a[1]
+    assert a[1] != 401
+    assert a[0] == "https://google.com"
     
     a = serve.receive(AUTH, "192.168.10.100")
-    assert a[0] == 204
+    assert a[1] == 204
 
 def test_client_status(setup):
     """Client calls, letting us know that they've started the request.  Will just update the Client file"""
@@ -152,10 +152,10 @@ def test_client_post(setup):
     """
     val = """{"data": {"article_url": "https://seekingalpha.com/article/4292485-behind-idea-amg-advanced-metallurgical-group-significant-upside-strong-downside-support", "author": "Robbe Delaet", "date": "September 19, 2019", "domain": "seekingalpha.com", "fragments": [], "html": "<p>Summary</p>\n<p>Contributor Robbe Delaet penned a recent Top Idea article on AMG Advanced Metallurgical Group NV (AMVMF).</p>\n<p>Seeking Alpha has conducted an interview with Mr. Delaet regarding this idea.</p>\n<p><em>PRO+ subscribers received 7 days' exclusive access to </em><em><a href=\"https://seekingalpha.com/author/robbe-delaet#regular_articles\">Robbe Delaet's</a></em><em> original </em><em><a href=\"https://seekingalpha.com/article/4291376-amg-advanced-metallurgical-group-significant-upside-strong-downside-support\">Top Idea</a></em><em><a href=\"https://seekingalpha.com/article/4291376-amg-advanced-metallurgical-group-significant-upside-strong-downside-support\"> on AMG Advanced Metallurgical</a>. Find out more about PRO+ </em><em><a href=\"https://seekingalpha.com/checkout?service_id=proplus\">here</a></em><a href=\"https://static.seekingalpha.com/uploads/2019/9/19/saupload_SA_repositioned_high_def.png\"><figure><img data-height=\"63\" data-og-image-facebook=\"false\" data-og-image-google_news=\"false\" data-og-image-google_plus=\"false\" data-og-image-linkdin=\"false\" data-og-image-msn=\"false\" data-og-image-twitter_image_post=\"false\" data-og-image-twitter_large_card=\"false\" data-og-image-twitter_small_card=\"false\" data-width=\"640\" src=\"https://static.seekingalpha.com/uploads/2019/9/19/saupload_SA_repositioned_high_def_thumb1.png\"></img></figure>  </a></p>\n<h3>Post-Top Idea Interview</h3>\n<p><strong>Seeking Alpha:</strong> For investors who haven't read your full Top Idea thesis, can you provide a brief summary?</p>\n<p><strong>Robbe Delaet:</strong> My article is about AMG, a company with two business units called AMG Critical Materials and AMG Technologies. Earnings were significantly under pressure in H1 2019 due to a one-"}}"""
     a = serve.post(AUTH, val, "https://seekingalphaWRONG.com")
-    assert a[0] == 405
+    assert a[1] == 405
 
     a = serve.post(AUTH, val, "https://facebook.com")
-    assert a[0] == 200
+    assert a[1] == 200
 
     with open(os.path.join(DATA_FOLDER, serve.path_safe("https://facebook.com"))) as f:
         assert f.read() == val
@@ -186,7 +186,7 @@ def test_dashboard(setup):
     Tests to make sure the dashboard is showing proper things
     """
     a = serve.dashboard()
-    assert a[0] == 200
-    assert "<table" in a[1]
-    assert "192.168.10" in a[1]
+    assert a[1] == 200
+    assert "<table" in a[0]
+    assert "192.168.10" in a[0]
 
