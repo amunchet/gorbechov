@@ -14,7 +14,7 @@ HOSTS_FOLDER="hosts"
 DATA_FOLDER="data"
 URLS_LIST="../master.txt"
 TIMEOUT = 15
-MAX=5
+MAX=15
 
 
 app = Flask(__name__)
