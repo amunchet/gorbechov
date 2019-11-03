@@ -34,10 +34,12 @@ def auth(func):
         with open("AUTH") as f:
             AUTH=f.read()
 
-        if "auth" not in kwargs or kwargs["auth"] != AUTH.strip():
-            return "Unauthorized", 401
-        else:
+        if "auth" not in kwargs and args[0].strip() == AUTH.strip():
             return func(*args, **kwargs)
+        elif "auth" in kwargs or kwargs["auth"] == AUTH.strip():
+            return func(*args, **kwargs)
+        else:
+            return "Unauthorized", 401
     return decorator
 
 @app.route("/ip/<auth>/")
@@ -121,6 +123,7 @@ def status(auth, ip):
     
     host_json["status"] = "running"
     host_json["last_run"] = str(datetime.datetime.now())
+    host_json["run_count"] = int(host_json["run_count"]) + 1
 
     with open(os.path.join(HOSTS_FOLDER, ip), "r+") as f:
         f.seek(0)
@@ -151,6 +154,7 @@ def post(auth, data="", url=""):
         f.truncate()
     
     return "Success", 200
+
 @app.route("/end/<auth>/<ip>/")
 @auth
 def end(auth, ip):
@@ -168,6 +172,8 @@ def end(auth, ip):
         f.seek(0)
         json.dump(host_json, f)
         f.truncate()
+    
+    return "Success", 200
 
 # Server only functions
 @app.route("/")

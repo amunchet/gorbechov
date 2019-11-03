@@ -31,4 +31,10 @@ if __name__ == "__main__":
     while ret == 200:
         a = requests.get(IP + ":" + PORT + "/receive/" + AUTH + "/" + ip)
         log.info("Received: " + a.text + "," + str(a.status_code))
-        ret = a.status_code
+        if a.status_code != 200:
+            break
+        a = requests.get(IP + ":" + PORT + "/status/" + AUTH + "/" + ip)
+
+        # Run the scraping
+
+

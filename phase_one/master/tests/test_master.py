@@ -134,6 +134,7 @@ def test_client_status(setup):
 
     assert client_json["status"] == "idle"
     assert client_json["last_run"] == ""
+    assert client_json["run_count"] == 3
 
 
     a = serve.status(AUTH, "192.168.10.100")
@@ -143,6 +144,7 @@ def test_client_status(setup):
 
     assert client_json["status"] == "running"
     assert client_json["last_run"] != ""
+    assert client_json["run_count"] == 4
 
 
 
@@ -172,6 +174,8 @@ def test_client_end(setup):
     assert client_json["status"] == "idle"
 
     a = serve.end(AUTH, "192.168.10.100")
+    print(a)
+    assert a[1] == 200
 
     with open(os.path.join(HOSTS_FOLDER, "192.168.10.100")) as f:
         client_json = json.load(f)
