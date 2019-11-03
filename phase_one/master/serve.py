@@ -207,9 +207,10 @@ def dashboard():
             retval += "<td>" + str(found_json["run_count"]) + "</td>"
             retval += "<td>" + str(found_json["last_run"]) + "</td>"
             retval += "<td>" + str(found_json["status"]) + "</td>"
-    retval += "</table><br /><h3>Data collected summary</h3>"
+    retval += "</table><br /><h3>Data collected summary - {{FOUND}} files</h3>"
     retval += "<table class='table table-striped table-bordered'>"
     retval += "<tr><th>Filename</th><th>Head of file</th></tr>"
+    count = 0
     for item in os.listdir(DATA_FOLDER):
         with open(os.path.join(DATA_FOLDER, item)) as f:
             try:
@@ -219,10 +220,11 @@ def dashboard():
         retval += "<tr><td>" + item + "</td><td>"
         retval += ''.join(temp_head)
         retval += "</td></tr>"
+        count += 1
 
     retval += "</table>"
     retval += "</body></html>"
-    return retval, 200
+    return retval.replace("{{FOUND}}", str(count)), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
