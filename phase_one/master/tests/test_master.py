@@ -30,7 +30,7 @@ def setup():
     TEMP_HOST = {
             "ip": "192.168.10.100",
             "run_count": 3,
-            "last_run" : str(datetime.now()),
+            "last_run" : "",
             "status" : "idle"
             }
 
@@ -56,13 +56,11 @@ def setup():
         f.write("CONTENT FROM THE FILE.\r\nCONTENT FROM THE FILE!")
 
     yield "Setup completed."
-
     for file in glob.glob(HOSTS_FOLDER + "/**"):
         os.remove(file)
 
     for file in glob.glob(DATA_FOLDER + "/**"):
         os.remove(file)
-
 
     return "Finished clean"
 
@@ -101,8 +99,8 @@ def test_client_receive(setup):
         - Need to update the status (wherver that's happening)
     """
     # Make sure the data file does not exist
-    serve.URLS_LIST = "test_urls.txt"
-    assert not os.path.exists(os.path.join(DATA_FOLDER, serve.safe_filename("https://seekingalpha.com")))
+    serve.URLS_LIST = "tests/test_urls.txt"
+    assert os.path.exists(os.path.join(DATA_FOLDER, serve.path_safe("https://seekingalpha.com"))) == False
 
     a = serve.receive(AUTH, "192.168.10.100")
     assert a[0] != 401
@@ -110,7 +108,7 @@ def test_client_receive(setup):
 
     # Make sure we touch the file in data but have no data in it
 
-    assert os.path.exists(os.path.join(DATA_FOLDER, serve.safe_filename("https://seekingalpha.com")))
+    assert os.path.exists(os.path.join(DATA_FOLDER, serve.path_safe("https://seekingalpha.com"))) == True
 
     old_max = serve.MAX
     serve.MAX = 1
@@ -124,34 +122,71 @@ def test_client_receive(setup):
     a = serve.receive(AUTH, "192.168.10.100")
     assert a[0] != 401
     assert "seekingalpha" not in a[1]
-
+    
+    a = serve.receive(AUTH, "192.168.10.100")
+    assert a[0] == 204
 
 def test_client_status(setup):
     """Client calls, letting us know that they've started the request.  Will just update the Client file"""
-    pass
+    client_json = ""
+    with open(os.path.join(HOSTS_FOLDER, "192.168.10.100")) as f:
+        client_json = json.load(f)
 
-def test_client_status(setup):
-    """
-    """
-    pass
+    assert client_json["status"] == "idle"
+    assert client_json["last_run"] == ""
+
+
+    a = serve.status(AUTH, "192.168.10.100")
+
+    with open(os.path.join(HOSTS_FOLDER, "192.168.10.100")) as f:
+        client_json = json.load(f)
+
+    assert client_json["status"] == "running"
+    assert client_json["last_run"] != ""
+
+
 
 def test_client_post(setup):
     """
     Posting back received data
     """
-    pass
+    val = """{"data": {"article_url": "https://seekingalpha.com/article/4292485-behind-idea-amg-advanced-metallurgical-group-significant-upside-strong-downside-support", "author": "Robbe Delaet", "date": "September 19, 2019", "domain": "seekingalpha.com", "fragments": [], "html": "<p>Summary</p>\n<p>Contributor Robbe Delaet penned a recent Top Idea article on AMG Advanced Metallurgical Group NV (AMVMF).</p>\n<p>Seeking Alpha has conducted an interview with Mr. Delaet regarding this idea.</p>\n<p><em>PRO+ subscribers received 7 days' exclusive access to </em><em><a href=\"https://seekingalpha.com/author/robbe-delaet#regular_articles\">Robbe Delaet's</a></em><em> original </em><em><a href=\"https://seekingalpha.com/article/4291376-amg-advanced-metallurgical-group-significant-upside-strong-downside-support\">Top Idea</a></em><em><a href=\"https://seekingalpha.com/article/4291376-amg-advanced-metallurgical-group-significant-upside-strong-downside-support\"> on AMG Advanced Metallurgical</a>. Find out more about PRO+ </em><em><a href=\"https://seekingalpha.com/checkout?service_id=proplus\">here</a></em><a href=\"https://static.seekingalpha.com/uploads/2019/9/19/saupload_SA_repositioned_high_def.png\"><figure><img data-height=\"63\" data-og-image-facebook=\"false\" data-og-image-google_news=\"false\" data-og-image-google_plus=\"false\" data-og-image-linkdin=\"false\" data-og-image-msn=\"false\" data-og-image-twitter_image_post=\"false\" data-og-image-twitter_large_card=\"false\" data-og-image-twitter_small_card=\"false\" data-width=\"640\" src=\"https://static.seekingalpha.com/uploads/2019/9/19/saupload_SA_repositioned_high_def_thumb1.png\"></img></figure>  </a></p>\n<h3>Post-Top Idea Interview</h3>\n<p><strong>Seeking Alpha:</strong> For investors who haven't read your full Top Idea thesis, can you provide a brief summary?</p>\n<p><strong>Robbe Delaet:</strong> My article is about AMG, a company with two business units called AMG Critical Materials and AMG Technologies. Earnings were significantly under pressure in H1 2019 due to a one-"}}"""
+    a = serve.post(AUTH, val, "https://seekingalphaWRONG.com")
+    assert a[0] == 405
+
+    a = serve.post(AUTH, val, "https://facebook.com")
+    assert a[0] == 200
+
+    with open(os.path.join(DATA_FOLDER, serve.path_safe("https://facebook.com"))) as f:
+        assert f.read() == val
 
 def test_client_end(setup):
     """
     Letting server know the client has finished
         - Basically will just update the client file and that's the end
     """
-    pass
+    client_json = ""
+    with open(os.path.join(HOSTS_FOLDER, "192.168.10.100")) as f:
+        client_json = json.load(f)
+
+    assert client_json["status"] == "idle"
+
+    a = serve.end(AUTH, "192.168.10.100")
+
+    with open(os.path.join(HOSTS_FOLDER, "192.168.10.100")) as f:
+        client_json = json.load(f)
+
+    assert client_json["status"] == "ended"
+
+
 
 
 def test_dashboard(setup):
     """
     Tests to make sure the dashboard is showing proper things
     """
-    pass
+    a = serve.dashboard()
+    assert a[0] == 200
+    assert "<table" in a[1]
+    assert "192.168.10" in a[1]
 
