@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Serve module for the master server"""
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 import inspect
 import os
@@ -34,11 +34,17 @@ def auth(func):
         with open("AUTH") as f:
             AUTH=f.read()
 
-        if args[0] != AUTH:
+        if "auth" not in kwargs or kwargs["auth"] != AUTH.strip():
             return "Unauthorized", 401
         else:
             return func(*args, **kwargs)
     return decorator
+
+@app.route("/ip/<auth>/")
+@auth
+def get_ip(auth):
+    """Returns the IP"""
+    return request.remote_addr, 200
 
 @app.route("/exists/<auth>/<ip>/")
 @auth
@@ -92,6 +98,9 @@ def receive(auth, ip):
                 fixed_line = line.split(" ")[1]
             else:
                 fixed_line = line
+
+            fixed_line = fixed_line[:75]
+
             if not os.path.exists(os.path.join(DATA_FOLDER, path_safe(fixed_line.strip()))):
                 pathlib.Path(os.path.join(DATA_FOLDER, path_safe(fixed_line.strip()))).touch()
                 return  fixed_line.strip(),200
