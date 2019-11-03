@@ -10,8 +10,8 @@ from gorbfetch import requests_final
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 log = logging.getLogger("client")
 
-IP = "http://127.0.0.1"
-PORT = "5000"
+IP = "http://159.89.48.163"
+PORT = "80"
 SLEEP = 20
 
 if __name__ == "__main__":
