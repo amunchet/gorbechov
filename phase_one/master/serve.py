@@ -197,7 +197,7 @@ def dashboard():
 
     retval += "</head><body class='container'>"
     retval += "<h2 style='text-align:right;'>Dashboard</h2>"
-    retval += "<table class='table'>"
+    retval += "<table class='table table-striped table-bordered'>"
     retval += "<tr><th>IP</th><th>Run Count</th><th>Last Run</th><th>Status</th></tr>"
     for host in os.listdir(HOSTS_FOLDER):
         with open(os.path.join(HOSTS_FOLDER, host)) as f:
@@ -208,7 +208,7 @@ def dashboard():
             retval += "<td>" + str(found_json["last_run"]) + "</td>"
             retval += "<td>" + str(found_json["status"]) + "</td>"
     retval += "</table><br /><h3>Data collected summary</h3>"
-    retval += "<table class='table'>"
+    retval += "<table class='table table-striped table-bordered'>"
     retval += "<tr><th>Filename</th><th>Head of file</th></tr>"
     for item in os.listdir(DATA_FOLDER):
         with open(os.path.join(DATA_FOLDER, item)) as f:
