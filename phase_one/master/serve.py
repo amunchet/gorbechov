@@ -129,6 +129,8 @@ def status(auth, ip):
         f.seek(0)
         json.dump(host_json, f)
         f.truncate()
+
+    return "Success", 200
 @app.route("/post/<auth>/", methods=["POST"])
 @auth
 def post(auth, data="", url=""):
@@ -139,9 +141,9 @@ def post(auth, data="", url=""):
     if data != "" and url != "":
         data_data = data
         data_url = url
-    elif request.type == "POST":
-        data_data = request.form["data"]
-        data_url = request.form["url"]
+    elif request.method == "POST":
+        data_data = request.form.get("data")
+        data_url = request.form.get("url")
     else:
         return  "Invalid arguments", 404
 
@@ -150,7 +152,7 @@ def post(auth, data="", url=""):
 
     with open(os.path.join(DATA_FOLDER, path_safe(data_url)), "r+") as f:
         f.seek(0)
-        f.write(data)
+        f.write(data_data)
         f.truncate()
     
     return "Success", 200

@@ -4,3 +4,6 @@ lib/**
 local/**
 share/**
 include/**
+
+data/**
+hosts/**

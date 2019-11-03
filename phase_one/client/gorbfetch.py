@@ -38,6 +38,23 @@ def requests_attempt():
     r = requests.get(url, headers=headers)
     return r
 
+def requests_final(url):
+    """
+    Use and parse requests
+    """
+
+    final_url = 'https://outlineapi.com/article?source_url=' + urllib.parse.quote(url, safe='')
+
+    headers = {"Origin" : "https://outline.com",
+        "Accept" : "*/*",
+        "Referer" : "https://outline.com/" + url,
+        "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36",
+        "Sec-Fetch-Mode" : "cors"
+        }
+    r = requests.get(final_url, headers=headers)
+    return r
+
+
 def parse_txt():
     """
     Parses the URL list and prep for retrieval
