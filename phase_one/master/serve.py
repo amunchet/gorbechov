@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Serve module for the master server"""
-from flask import Flask, request
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import inspect
 import os
@@ -178,53 +178,43 @@ def end(auth, ip):
     return "Success", 200
 
 # Server only functions
-@app.route("/")
-@app.route("/dashboard")
-def dashboard():
-    """
-    Displays dashboard with all hosts and their statuses
-        - Will also want to show where we are in the file overall
-    """
-    retval = "<html><head>"
-    retval += """<!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
-
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>"""
-
-    retval += "</head><body class='container'>"
-    retval += "<h2 style='text-align:right;'>Dashboard</h2>"
-    retval += "<table class='table table-striped table-bordered'>"
-    retval += "<tr><th>IP</th><th>Run Count</th><th>Last Run</th><th>Status</th></tr>"
+@app.route("/dashboard_hosts")
+def send_hosts():
+    """Sends the hosts information - used to update"""
+    retval = []
     for host in os.listdir(HOSTS_FOLDER):
         with open(os.path.join(HOSTS_FOLDER, host)) as f:
             found_json = json.load(f)
-            retval += "<tr>"
-            retval += "<td>" + str(found_json["ip"]) + "</td>"
-            retval += "<td>" + str(found_json["run_count"]) + "</td>"
-            retval += "<td>" + str(found_json["last_run"]) + "</td>"
-            retval += "<td>" + str(found_json["status"]) + "</td>"
-    retval += "</table><br /><h3>Data collected summary - {{FOUND}} files</h3>"
-    retval += "<table class='table table-striped table-bordered'>"
-    retval += "<tr><th>Filename</th><th>Head of file</th></tr>"
-    count = 0
+        retval.append(found_json)
+        
+    return jsonify(retval), 200
+    
+
+@app.route("/dashboard_count")
+def send_count():
+    """Sends the count of the retrieved files"""
+    return str(len(os.listdir(DATA_FOLDER))-1)
+
+@app.route("/dashboard_status")
+def send_status():
+    """Sends the file status"""
+    retval = []
     for item in os.listdir(DATA_FOLDER):
         with open(os.path.join(DATA_FOLDER, item)) as f:
             try:
                 temp_head =  [next(f) for x in range(3)]
             except:
                 temp_head = ["Empty file or error"]
-        retval += "<tr><td>" + item + "</td><td>"
-        retval += ''.join(temp_head)
-        retval += "</td></tr>"
-        count += 1
+        retval.append((item, ''.join(temp_head)))
+    return jsonify(retval), 200
 
-    retval += "</table>"
-    retval += "</body></html>"
-    return retval.replace("{{FOUND}}", str(count)), 200
+@app.route("/")
+def dashboard():
+    """
+    Displays dashboard with all hosts and their statuses
+        - Will also want to show where we are in the file overall
+    """
+    return render_template("index.html"), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
