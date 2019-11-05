@@ -31,7 +31,11 @@ function read_status(){
 
 function read_count(){
 	$.get("/dashboard_count", data => {
-		$("#total_count").html(data)
+		var completed_count = $("table#data_table tbody tr.completed").length
+
+		$("#total_count").html(data + " total, " + Math.abs(1 * completed_count + 1 - 1 * data ) + " problem " )
+
+
 	})
 }
 
