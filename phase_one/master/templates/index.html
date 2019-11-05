@@ -15,8 +15,11 @@
     <link rel='stylesheet' href='/static/styles.css' />
     </head>
     <body class='container'>
-    <h2 style='text-align:right;'>Dashboard</h2>
-    <table class='table table-striped table-bordered'>
+<div class='header'>
+	    <button type="button" class="btn btn-primary" onclick='javascript:show_all();'>Show All</button>
+	    <button type='button' class='btn btn-success' onclick='javascript:hide_all();'>Hide All</button>
+	    <h2>Dashboard</h2></div>
+    <table id='hosts_table' class='table table-striped table-bordered'>
     <tr><th>IP</th><th>Run Count</th><th>Last Run</th><th>Status</th></tr>
     
 
@@ -24,7 +27,7 @@
 	<br />
 	<h3>Data collected summary - <span id='total_count'></span> files</h3>
 
-    <table class='table table-striped table-bordered'>
+    <table id='data_table' class='table table-striped table-bordered'>
     <tr><th>Filename</th><th>Head of file</th></tr>
     </table>
 

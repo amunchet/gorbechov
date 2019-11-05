@@ -1,0 +1,20 @@
+h2{
+	float: right;
+	margin-right: 1%;
+	margin-top: 0;
+	text-align: right;
+	width: 50%;
+
+}
+button{
+	float: left;
+	margin-right: 1%;
+}	
+.header{
+	margin-top: 20px;
+	overflow:hidden;
+	width: 100%;
+}
+.completed{
+	display: none;
+}
