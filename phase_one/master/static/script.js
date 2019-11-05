@@ -16,7 +16,6 @@ function read_hosts(){
 function read_status(){
 	$("#data_loading").show()
 	$.getJSON("/dashboard_status", (data) => {
-		$("#data_loading").hide()
 		$("#data_table tr.inserted").remove()
 		$.each(data, (key,val)=>{
 			var row_class = ''
@@ -25,6 +24,8 @@ function read_status(){
 			}
 			$("#data_table tr:last").after("<tr class='inserted " + row_class + "'><td>" + val[0] + "</td><td>" + val[1] + "</td></tr>")
 		})
+
+		$("#data_loading").hide()
 	})
 }
 
