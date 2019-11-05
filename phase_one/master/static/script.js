@@ -26,6 +26,7 @@ function read_status(){
 		})
 
 		$("#data_loading").hide()
+		read_count()
 	})
 }
 
@@ -50,12 +51,10 @@ $(document).ready(()=>{
 	
 	read_hosts()
 	read_status()
-	read_count()
 
 
 	setInterval(()=>{
 		read_hosts()
 		read_status()
-		read_count()
 	},30000)
 })
