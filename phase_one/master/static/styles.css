@@ -6,6 +6,9 @@ h2{
 	width: 50%;
 
 }
+#data_loading{
+	display:none;
+}
 button{
 	float: left;
 	margin-right: 1%;
