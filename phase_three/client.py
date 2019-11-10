@@ -6,12 +6,14 @@ Will possibly have to be offloaded to cloud for rate limiting
 """
 
 import yfinance as yf
+import os
 import json
 import time
 
 INPUT_FILE = "output.json"
 LIMIT = 10
 DELAY = 3
+DATA_DIR = "./data/"
 a = ""
 with open(INPUT_FILE) as f:
     a = json.load(f)
@@ -44,11 +46,14 @@ for item in a:
     retval = (symbol, start, end, c_max, c_open)
 
     print(retval)
+    
+    fname = DATA_DIR + symbol + "." + start + "." + end
 
-    if c_max > c_open * 1.1:
-        print("Greater than 10% found!")
-    else:
-        print ("Less than 10% gain found")
+    if not os.path.exists(fname):
+        with open(fname, "w") as f:
+            json.dump(retval, f)
+
+
     time.sleep(DELAY)
     count += 1
 
