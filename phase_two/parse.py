@@ -6,30 +6,36 @@ Parsing the symbols from the disclosures at the ends of the documents
 """
 import os
 import json
+import dateparser
+from datetime import timedelta
 
 DATA_FOLDER="./data"
 CSV_FILE="./dumbstockapi.csv"
+DAYS_FUTURE = 90
+OUTPUTFILE="output.json"
 
-CSV_DATA = []
 
 def load_symbols():
     """
     Loads the symbols from the dumbstock api csv
         - If a symbol isn't found, it's probably traded on a weird market
     """
+    CSV_DATA = []
     with open(CSV_FILE) as f:
         for line in f.readlines():
             if line != "":
                 CSV_DATA.append(line.split(",")[0].replace("'", '').replace('"', '').strip())
-
+    
     print (CSV_DATA[:5])
+    return CSV_DATA
 
 
-def find_symbols():
+def find_symbols(CSV_DATA):
     """Finds the symbols in the data files as required in disclosures"""
     found = 0
     not_found = 0
 
+    retval =  []
     for fname in os.listdir(DATA_FOLDER):
         a = ""
         try:
@@ -37,6 +43,8 @@ def find_symbols():
                 a = json.load(f)
 
             b = a['data']['html'].split("are long") # There are like 20 or so where they say "am long" - include those?
+            initial_date = dateparser.parse(a['data']['date'])
+            future_date = initial_date + timedelta(days=DAYS_FUTURE)
 
             # There are 8,622 files that this is the case for
             if (len(b) > 1):
@@ -45,6 +53,9 @@ def find_symbols():
                     if stock.strip() in CSV_DATA:
                         # print ("Found stock ", stock)
                         # print ("Context: ", b[0][-10:], " are long", c)
+                        temp = (stock.strip(), str(initial_date), str(future_date))
+                        retval.append(temp)
+
                         found += 1
                     else:
                         #print ("Stock not found: ", stock)
@@ -61,18 +72,18 @@ def find_symbols():
 
     print ("Found: ", found)
     print ("Not found: ", not_found)
-
-def determine_date():
-    """
-    Determines the date from a given file
-    """
-    pass
+    return retval
 
 
-def determine_date_range():
-    """ 
-    Determines the date range in question that we will pass to yfinance
-    """
-    pass
+
+def main():
+    """Main loop function"""
+    CSV_DATA = load_symbols()
+    a = find_symbols(CSV_DATA)
+    print(a)
+    with open(OUTPUTFILE, "w") as f:
+        json.dump(a, f)
 
 
+if __name__ == "__main__":
+    main()
