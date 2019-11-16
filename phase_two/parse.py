@@ -45,6 +45,7 @@ def find_symbols(CSV_DATA):
             b = a['data']['html'].split("are long") # There are like 20 or so where they say "am long" - include those?
             initial_date = dateparser.parse(a['data']['date'])
             future_date = initial_date + timedelta(days=DAYS_FUTURE)
+            author = a['data']['author']
 
             # There are 8,622 files that this is the case for
             if (len(b) > 1):
@@ -53,7 +54,7 @@ def find_symbols(CSV_DATA):
                     if stock.strip() in CSV_DATA:
                         # print ("Found stock ", stock)
                         # print ("Context: ", b[0][-10:], " are long", c)
-                        temp = (stock.strip(), str(initial_date), str(future_date))
+                        temp = (stock.strip(), str(initial_date), str(future_date), author)
                         retval.append(temp)
 
                         found += 1

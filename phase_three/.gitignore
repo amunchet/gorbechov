@@ -4,3 +4,5 @@ bin/**
 share/**
 lib/**
 include/**
+**.sqlite
+output.json
