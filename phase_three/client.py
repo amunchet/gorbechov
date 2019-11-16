@@ -11,7 +11,7 @@ import json
 import time
 
 INPUT_FILE = "output.json"
-LIMIT = 10
+LIMIT = 25000
 DELAY = 3
 DATA_DIR = "./data/"
 a = ""
@@ -30,30 +30,37 @@ for item in a:
     start = item[1].replace("00:00:00", "").strip()
     end = item[2].replace("00:00:00", "").strip()
 
-
-    print ("Symbol: ", symbol, "; start: ", start, "; end: ", end)
-
-    c = yf.download(symbol, start=start, end=end)
-
-    print("Yahoo data: ", c)
-
-    c_max = c['High'][1:].max() # We only care what the max in the 90 day window was, since it will be a sell order
-
-    print ("C_max: ", c_max)
-
-    c_open = c['Open'][1] # Opening on the day immediately following the article
-
-    retval = (symbol, start, end, c_max, c_open)
-
-    print(retval)
-    
     fname = DATA_DIR + symbol + "." + start + "." + end
 
-    if not os.path.exists(fname):
-        with open(fname, "w") as f:
-            json.dump(retval, f)
+    if os.path.exists(fname):
+        print ("File exists ", fname)
+    else:
+        try:
 
+            print ("Symbol: ", symbol, "; start: ", start, "; end: ", end)
 
-    time.sleep(DELAY)
-    count += 1
+            c = yf.download(symbol, start=start, end=end)
+
+            print("Yahoo data: ", c)
+
+            c_max = c['High'][1:].max() # We only care what the max in the 90 day window was, since it will be a sell order
+
+            print ("C_max: ", c_max)
+
+            c_open = c['Open'][1] # Opening on the day immediately following the article
+
+            retval = (symbol, start, end, c_max, c_open)
+
+            print(retval)
+            
+
+            if not os.path.exists(fname):
+                with open(fname, "w") as f:
+                    json.dump(retval, f)
+
+        except Exception:
+            print ("Problem occurred with ", fname)
+
+        time.sleep(DELAY)
+        count += 1
 
