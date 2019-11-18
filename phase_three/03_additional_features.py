@@ -9,10 +9,19 @@ import glob
 import os
 
 from iexfinance.refdata import get_symbols
+import yfinance
+
+
+
 
 JSON_FILE = "output.json"
 DATA_DIR = "./data/"
+IEX_KEYFILE = "./iex.key"
+OUTPUTFILE="final.csv"
+
 VERBOSE = 1
+
+
 
 SYMBOLS = {}
 
@@ -50,15 +59,32 @@ def fix_author():
 
 def sector_and_industry(symbol):
     """Brings in the sector and industry for a given symbol"""
-    pass
+    a = yfinance.Ticker(symbol)
+    try:
+        return (a.info["sector"], a.info["industry"])
+    except Exception:
+        return (None, None) # We have a fund
 
 def employees(symbol):
     """Brings in the number of employees for a given symbol"""
-    pass
+
+    a = yfinance.Ticker(symbol)
+    try:
+        return a.info["fullTimeEmployees"]
+    except (TypeError, ValueError, IndexError) as e:
+        return None
 
 def load_symbols():
     """Loads in all the symbols"""
-    SYMBOLS = get_symbols()
+    token = ""
+    with open(IEX_KEYFILE) as f:
+        token = f.read().strip()
+
+    if VERBOSE:
+        print ("First four of token: ", token[:4])
+    SYMBOLS = get_symbols(token=token)
+    return SYMBOLS
+
 
 def symbol_type(symbol):
     """
@@ -68,18 +94,33 @@ def symbol_type(symbol):
         - I guess bring over the exchange type too - NYSE or NASDAQ
 
     """
-
-    pass
-
-def compile(symbol):
-    """
-    Compiles the data
-        - Removes the symbol itself, since we want to generalize the type
-        - Performs the percent increase calculation
-        - Provides the column headers
-        - Outputs the CSV
-    """
-    pass
+    try:
+        return [x for x in SYMBOLS if x['symbol'] == symbol][0]['type']
+    except Exception:
+        return None
 
 if __name__ == "__main__":
-    print(fix_author())
+    SYMBOLS = load_symbols() 
+    a = fix_author()
+    headers = "author\tsector\tindustry\tsymbol_type\temployee_count\twin\r\n"
+    retval = []
+    for line in a:
+        try:
+            author = line[5]
+            symbol= symbol_type(line[0])
+            employee_count = employees(line[0])
+            if VERBOSE:
+                print ("Checking sector and industry for: ", line[0])
+            (sector, industry) = sector_and_industry(line[0])
+            percent_change = ((line[3] - line[4])/line[3]) > 0.05
+
+            retval.append("{}\t{}\t{}\t{}\t{}\t{}\r\n".format(author, sector, industry, symbol,employee_count, percent_change))
+        except Exception:
+            print("Error occurred - skipping: ", line)
+
+    if os.path.exists(OUTPUTFILE):
+        os.remove(OUTPUTFILE)
+
+    with open(OUTPUTFILE, "w") as f:
+        f.write(''.join(retval))
+
