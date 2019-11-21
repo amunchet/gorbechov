@@ -109,12 +109,15 @@ if __name__ == "__main__":
             author = line[5]
             symbol= symbol_type(line[0])
             employee_count = employees(line[0])
-            if VERBOSE:
-                print ("Checking sector and industry for: ", line[0])
             (sector, industry) = sector_and_industry(line[0])
             percent_change = ((line[3] - line[4])/line[3]) > 0.05
 
-            retval.append("{}\t{}\t{}\t{}\t{}\t{}\r\n".format(author, sector, industry, symbol,employee_count, percent_change))
+            ret_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\r\n".format(line[0], author, sector, industry, symbol,employee_count, percent_change)
+            
+            if VERBOSE:
+                print("Line: ", ret_line)
+            retval.append(ret_line)
+
         except Exception:
             print("Error occurred - skipping: ", line)
 
