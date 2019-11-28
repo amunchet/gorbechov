@@ -6,22 +6,22 @@ master will be the controller
 client will be for the individual scrapers
 
 ## Master API
-- /exists/<ip>/<auth>
+- `/exists/<ip>/<auth>`
 	+ Checks if the IP is already registered.
-- /register/<ip>/<auth>
+- `/register/<ip>/<auth>`
 	+ Registers the IP - will write out to file on disk
-- /receive/<ip>/<auth>
+- `/receive/<ip>/<auth>`
 	+ Receives an allocated URL to scrape
 
 	+ This is where the server will check how many we've done in the hour and for the day
 
-- /status/<ip>/<auth> 
+- `/status/<ip>/<auth>`
 	+ This will be called, letting the server know that we're starting up our request
 
-- /post/<auth>
+- `/post/<auth>`
 	+ Posts back the results, will then save to disk
 	+ We don't care what the IP is
-- /end/<ip>/<auth>
+- `/end/<ip>/<auth>`
 	+ Sends to the server letting us know that we have finished as many as we can, either for the hour or for the day
 
 ## Client design
