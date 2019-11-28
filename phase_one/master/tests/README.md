@@ -1,2 +1,2 @@
 # Running Tests
-Run tests from this directory with pytest --cov...whatever
+Run tests from this directory with pytest --cov
