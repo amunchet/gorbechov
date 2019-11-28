@@ -7,6 +7,8 @@ Initial: I initially scraped past articles, using Feedly and some in-browser Chr
 
 Phase 1-4:  Various phases of the process, sepearated for sanity. 
 
+Final thoughts and the Jupyter notebook are found in Phase 4
+
 ## Notes
 The .txt raw files come from Feedly's archives - basically just infinite scrolling back to retrieve the links.
 
